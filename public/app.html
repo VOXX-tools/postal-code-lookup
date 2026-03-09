@@ -40,8 +40,25 @@
     .subtitle {
       color: #666;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 10px;
       font-size: 14px;
+    }
+
+    .powered-by {
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+      text-align: center;
+      color: #999;
+      font-size: 12px;
     }
 
     .info-box {
@@ -232,6 +249,7 @@
   <div id="app">
     <h1>🏣 郵便番号検索システム</h1>
     <p class="subtitle">市区町村名から郵便番号を検索</p>
+    <p class="powered-by">Powered by VOXX</p>
     
     <div class="info-box">
       💡 市区町村名を入力すると、その地域のすべての郵便番号がカンマ区切りで表示されます。<br>
@@ -254,6 +272,10 @@
 
     <div class="results" id="results" data-testid="result-container">
       <div id="result-content"></div>
+    </div>
+
+    <div class="footer">
+      © VOXX. All rights reserved.
     </div>
   </div>
 
