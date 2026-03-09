@@ -1,0 +1,24 @@
+# 依存関係
+node_modules/
+
+# ログファイル
+*.log
+npm-debug.log*
+
+# 環境変数
+.env
+.env.local
+
+# OS固有のファイル
+.DS_Store
+Thumbs.db
+
+# エディタ設定
+.vscode/
+.idea/
+
+# テストカバレッジ
+coverage/
+
+# Kiro設定（プロジェクト固有）
+.kiro/

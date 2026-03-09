@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>郵便番号検索システム</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #app {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #1976d2;
+    }
+
+    .search-container {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+
+    .suggestions.show {
+      display: block;
+    }
+
+    .suggestion-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .results {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .results.show {
+      display: block;
+    }
+
+    .results h2 {
+      color: #333;
+      margin-bottom: 12px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .copy-button {
+      padding: 8px 16px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: auto;
+    }
+
+    .copy-button:hover {
+      background: #45a049;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    }
+
+    .copy-button:active {
+      transform: translateY(0);
+    }
+
+    .copy-button.copied {
+      background: #2196F3;
+    }
+
+    .postal-codes {
+      color: #555;
+      line-height: 1.8;
+      font-size: 16px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .error {
+      color: #d32f2f;
+      padding: 12px;
+      background: #ffebee;
+      border-left: 4px solid #d32f2f;
+      border-radius: 4px;
+    }
+
+    .loading {
+      text-align: center;
+      color: #667eea;
+      font-style: italic;
+    }
+
+    @media (max-width: 600px) {
+      #app {
+        padding: 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>🏣 郵便番号検索システム</h1>
+    <p class="subtitle">市区町村名から郵便番号を検索</p>
+    
+    <div class="info-box">
+      💡 市区町村名を入力すると、その地域のすべての郵便番号がカンマ区切りで表示されます。<br>
+      📝 複数の市区町村を検索する場合は、カンマで区切って入力してください（例: 千代田区, 渋谷区, 新宿区）
+    </div>
+
+    <div class="search-container">
+      <label for="municipality-input">市区町村名</label>
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          id="municipality-input" 
+          placeholder="例: 千代田区、渋谷区、横浜市（複数可、カンマ区切り）"
+          data-testid="municipality-input"
+        >
+        <div class="suggestions" id="suggestions" data-testid="autocomplete-suggestions"></div>
+      </div>
+      <button id="search-button" data-testid="search-button">検索</button>
+    </div>
+
+    <div class="results" id="results" data-testid="result-container">
+      <div id="result-content"></div>
+    </div>
+  </div>
+
+  <script>
+    // CSVデータを格納する変数
+    let postalData = [];
+    let municipalities = [];
+
+    // CSVファイルを読み込む
+    async function loadCSVData() {
+      try {
+        const response = await fetch('../data/postal-codes.csv');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const text = await response.text();
+        
+        console.log('CSVファイルを読み込みました');
+        
+        // CSVをパース（簡易版 - ダブルクォートで囲まれた値を考慮）
+        const lines = text.split('\n');
+        const dataMap = new Map();
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          // CSVの列を解析
+          const columns = [];
+          let current = '';
+          let inQuotes = false;
+          
+          for (let j = 0; j < line.length; j++) {
+            const char = line[j];
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              columns.push(current.replace(/^"|"$/g, '').trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          columns.push(current.replace(/^"|"$/g, '').trim());
+          
+          if (columns.length < 9) continue;
+          
+          // JIS KEN_ALL形式: 列インデックス
+          // 0: 全国地方公共団体コード
+          // 1: (旧)郵便番号
+          // 2: 郵便番号
+          // 3: 都道府県名カナ
+          // 4: 市区町村名カナ
+          // 5: 町域名カナ
+          // 6: 都道府県名
+          // 7: 市区町村名
+          // 8: 町域名
+          const prefecture = columns[6];
+          const city = columns[7];
+          const postalCode = columns[2];
+          
+          if (!prefecture || !city || !postalCode) continue;
+          
+          const municipalityName = `${prefecture}${city}`;
+          
+          if (!dataMap.has(municipalityName)) {
+            dataMap.set(municipalityName, new Set());
+          }
+          dataMap.get(municipalityName).add(postalCode);
+        }
+        
+        // データを配列に変換
+        postalData = Array.from(dataMap.entries()).map(([name, codes]) => ({
+          name,
+          postalCodes: Array.from(codes).sort()
+        }));
+        
+        municipalities = postalData.map(d => d.name);
+        
+        console.log(`${postalData.length}件の市区町村データを読み込みました`);
+        console.log('サンプル:', municipalities.slice(0, 5));
+        
+        if (postalData.length === 0) {
+          alert('警告: CSVデータが正しく読み込まれませんでした。');
+        }
+      } catch (error) {
+        console.error('CSVデータの読み込みエラー:', error);
+        alert('CSVデータの読み込みに失敗しました: ' + error.message);
+      }
+    }
+
+    // オートコンプリート機能（複数入力対応）
+    function showSuggestions(input) {
+      const suggestionsEl = document.getElementById('suggestions');
+      
+      if (!input || input.length < 1) {
+        suggestionsEl.classList.remove('show');
+        return;
+      }
+      
+      // カンマで区切って最後の入力部分を取得
+      const parts = input.split(/[,、]/);
+      const lastPart = parts[parts.length - 1].trim();
+      
+      if (!lastPart || lastPart.length < 1) {
+        suggestionsEl.classList.remove('show');
+        return;
+      }
+      
+      const filtered = municipalities
+        .filter(m => m.includes(lastPart))
+        .slice(0, 10);
+      
+      if (filtered.length === 0) {
+        suggestionsEl.classList.remove('show');
+        return;
+      }
+      
+      suggestionsEl.innerHTML = filtered
+        .map(m => `<div class="suggestion-item" data-value="${m}">${m}</div>`)
+        .join('');
+      
+      suggestionsEl.classList.add('show');
+      
+      // 候補クリックイベント
+      suggestionsEl.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const inputEl = document.getElementById('municipality-input');
+          const currentValue = inputEl.value;
+          const parts = currentValue.split(/[,、]/);
+          
+          // 最後の部分を選択した候補に置き換え
+          parts[parts.length - 1] = item.dataset.value;
+          
+          // カンマと半角スペースを追加して次の入力を促す
+          inputEl.value = parts.join(', ') + ', ';
+          
+          suggestionsEl.classList.remove('show');
+          
+          // フォーカスを維持
+          inputEl.focus();
+        });
+      });
+    }
+
+    // 検索機能（複数市区町村対応）
+    function search() {
+      const input = document.getElementById('municipality-input').value.trim();
+      const resultsEl = document.getElementById('results');
+      const contentEl = document.getElementById('result-content');
+      
+      if (!input) {
+        contentEl.innerHTML = '<div class="error">市区町村名を入力してください</div>';
+        resultsEl.classList.add('show');
+        return;
+      }
+      
+      // カンマ区切りで複数の市区町村を分割
+      const inputList = input.split(/[,、]/).map(s => s.trim()).filter(s => s.length > 0);
+      
+      if (inputList.length === 0) {
+        contentEl.innerHTML = '<div class="error">市区町村名を入力してください</div>';
+        resultsEl.classList.add('show');
+        return;
+      }
+      
+      // 各市区町村を検索
+      const allResults = [];
+      const notFoundList = [];
+      
+      for (const searchTerm of inputList) {
+        const found = postalData.filter(d => d.name.includes(searchTerm));
+        
+        if (found.length === 0) {
+          notFoundList.push(searchTerm);
+        } else {
+          allResults.push({
+            searchTerm,
+            data: found
+          });
+        }
+      }
+      
+      // 結果を表示
+      let resultHTML = '';
+      
+      if (allResults.length > 0) {
+        // 全ての郵便番号を集約
+        const allPostalCodes = allResults.flatMap(r => r.data.flatMap(d => d.postalCodes));
+        const uniqueCodes = [...new Set(allPostalCodes)].sort();
+        
+        resultHTML += `
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <h2 style="margin: 0;">検索結果（${allResults.length}件）</h2>
+            <button class="copy-button" onclick="copyToClipboard()" data-testid="copy-button">
+              📋 一括コピー
+            </button>
+          </div>
+        `;
+        
+        // 市区町村ごとの結果を表示
+        for (const result of allResults) {
+          const codes = result.data.flatMap(d => d.postalCodes);
+          const uniqueCodesForTerm = [...new Set(codes)].sort();
+          
+          resultHTML += `
+            <div style="margin-bottom: 16px; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e0e0e0;">
+              <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">
+                📍 ${result.searchTerm} (${uniqueCodesForTerm.length}件)
+              </div>
+              <div style="color: #666; font-size: 14px;">
+                ${uniqueCodesForTerm.join(', ')}
+              </div>
+            </div>
+          `;
+        }
+        
+        // 全郵便番号リスト（一括コピー用、非表示）
+        resultHTML += `
+          <div style="margin-top: 20px; padding: 16px; background: #f0f7ff; border-radius: 6px; border: 2px solid #667eea;">
+            <div style="font-weight: 600; color: #333; margin-bottom: 8px;">
+              📋 全郵便番号（${uniqueCodes.length}件）
+            </div>
+            <div class="postal-codes" id="postal-codes-list" data-testid="postal-codes-output" style="font-size: 14px;">
+              ${uniqueCodes.join(', ')}
+            </div>
+          </div>
+        `;
+      }
+      
+      // 見つからなかった市区町村を表示
+      if (notFoundList.length > 0) {
+        resultHTML += `
+          <div class="error" style="margin-top: 16px;">
+            見つかりませんでした: ${notFoundList.join(', ')}
+          </div>
+        `;
+      }
+      
+      // 全て見つからなかった場合
+      if (allResults.length === 0) {
+        resultHTML = '<div class="error">指定された市区町村が見つかりません</div>';
+      }
+      
+      contentEl.innerHTML = resultHTML;
+      resultsEl.classList.add('show');
+    }
+
+    // クリップボードにコピー
+    async function copyToClipboard() {
+      const postalCodesEl = document.getElementById('postal-codes-list');
+      const text = postalCodesEl.textContent.trim();
+      const button = document.querySelector('.copy-button');
+      
+      try {
+        await navigator.clipboard.writeText(text);
+        
+        // 成功フィードバック
+        const originalText = button.textContent;
+        button.textContent = '✓ コピーしました！';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        console.error('コピーに失敗しました:', err);
+        alert('クリップボードへのコピーに失敗しました');
+      }
+    }
+
+    // イベントリスナー
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadCSVData();
+      
+      const inputEl = document.getElementById('municipality-input');
+      const searchBtn = document.getElementById('search-button');
+      const suggestionsEl = document.getElementById('suggestions');
+      
+      // 入力イベント
+      inputEl.addEventListener('input', (e) => {
+        showSuggestions(e.target.value);
+      });
+      
+      // 検索ボタン
+      searchBtn.addEventListener('click', search);
+      
+      // Enterキーで検索
+      inputEl.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          search();
+        }
+      });
+      
+      // 外側クリックで候補を閉じる
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.input-wrapper')) {
+          suggestionsEl.classList.remove('show');
+        }
+      });
+      
+      console.log('アプリケーションの準備ができました');
+    });
+  </script>
+</body>
+</html>

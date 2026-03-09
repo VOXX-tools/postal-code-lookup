@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>郵便番号検索システム</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #app {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .search-container {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .suggestion-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .suggestion-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .suggestion-item:active {
+      background-color: #e0e0e0;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .results {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      min-height: 100px;
+    }
+
+    .results h2 {
+      color: #333;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .postal-codes {
+      color: #555;
+      line-height: 1.8;
+      font-size: 16px;
+      word-break: break-all;
+    }
+
+    .error {
+      color: #d32f2f;
+      padding: 12px;
+      background: #ffebee;
+      border-left: 4px solid #d32f2f;
+      border-radius: 4px;
+    }
+
+    .loading {
+      text-align: center;
+      color: #667eea;
+      font-style: italic;
+    }
+
+    .empty {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #1976d2;
+    }
+
+    @media (max-width: 600px) {
+      #app {
+        padding: 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>🏣 郵便番号検索システム</h1>
+    <p class="subtitle">市区町村名から郵便番号を検索</p>
+    
+    <div class="info-box">
+      💡 市区町村名を入力すると、その地域のすべての郵便番号がカンマ区切りで表示されます。
+    </div>
+
+    <!-- アプリケーションはここにマウントされます -->
+  </div>
+
+  <script type="module" src="../index.js"></script>
+</body>
+</html>
